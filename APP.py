@@ -4,7 +4,7 @@ import pickle
 import pandas as pd
 
 # Loading the saved model
-model = pickle.load(open('model/model.pkl', 'rb'))
+model = pickle.load(open('model.pkl', 'rb'))
 
 st.title("Wellness Tourism Package Prediction")
 st.write("Enter customer details below to predict if they will purchase the package.")
