@@ -22,7 +22,6 @@ def load_model():
 model = load_model()
 
 if model is not None:
-    # Input fields matching standard tourism package features
     st.subheader("Customer Details")
     
     col1, col2 = st.columns(2)
@@ -40,17 +39,35 @@ if model is not None:
     own_car_val = 1 if own_car == "Yes" else 0
 
     if st.button("Predict Package Purchase", type="primary"):
-        # Construct DataFrame for model input
-        input_data = pd.DataFrame([{
-            'Age': age,
-            'MonthlyIncome': monthly_income,
-            'DurationOfPitch': duration_pitch,
-            'NumberOfTrips': number_of_trips,
-            'Passport': passport_val,
-            'OwnCar': own_car_val
-        }])
-        
         try:
+            # Create a base dataframe with all features expected by the model initialized to 0
+            if hasattr(model, "feature_names_in_"):
+                input_data = pd.DataFrame(columns=model.feature_names_in_)
+                input_data.loc[0] = 0  # Fill default zeros for all columns
+                
+                # Map user inputs to matching column names if they exist in the model
+                mapping = {
+                    'Age': age,
+                    'MonthlyIncome': monthly_income,
+                    'DurationOfPitch': duration_pitch,
+                    'NumberOfTrips': number_of_trips,
+                    'Passport': passport_val,
+                    'OwnCar': own_car_val
+                }
+                for col, val in mapping.items():
+                    if col in input_data.columns:
+                        input_data.loc[0, col] = val
+            else:
+                # Fallback if feature names aren't embedded
+                input_data = pd.DataFrame([{
+                    'Age': age,
+                    'MonthlyIncome': monthly_income,
+                    'DurationOfPitch': duration_pitch,
+                    'NumberOfTrips': number_of_trips,
+                    'Passport': passport_val,
+                    'OwnCar': own_car_val
+                }])
+
             prediction = model.predict(input_data)[0]
             
             st.markdown("---")
@@ -59,5 +76,4 @@ if model is not None:
             else:
                 st.info("Result: The customer is **UNLIKELY** to purchase the Wellness Package.")
         except Exception as e:
-            st.warning("Model input shape mismatch. Please make sure the features passed match your trained model columns.")
-            st.error(f"Details: {e}")
+            st.error(f"Prediction Error: {e}")
